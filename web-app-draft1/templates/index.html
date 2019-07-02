@@ -65,7 +65,7 @@
                         <br><br>
 
                         <!-- ERA5 Field -->
-                        <label for="era5_field">Major/Minor:</label>
+                        <label for="era5_field">ERA5 Field:</label>
                         <select id="era5_field" name="era5_field">
                             <option value="t2m" {% if era5_val=='t2m' %} selected="selected"{% endif %} >Temperature at 2 m (K)</option>
                             <option value="msl" {% if era5_val=='msl' %} selected="selected"{% endif %} >Mean sea level pressure (mb)</option>
@@ -88,7 +88,7 @@
                         <br><br>
         
                         <!-- Satellite field -->
-                        <label for="sat_field">CloudSat Field:</label>
+                        <label for="sat_field">Satellite Field:</label>
                         <select id="sat_field" name="sat_field">
                             <option value="radar_refl" {% if cloudsat_val=='radar_refl' %} selected="selected"{% endif %} >Radar Reflectivity</option>
                             <option value="cloud_type" {% if cloudsat_val=='cloud_type' %} selected="selected"{% endif %} >Cloud Type</option>

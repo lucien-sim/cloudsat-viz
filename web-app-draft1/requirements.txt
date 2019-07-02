@@ -1,5 +1,0 @@
-gunicorn==19.9.0
-flask
-pandas
-bokeh
-numpy

@@ -9,4 +9,4 @@ NOTE: The tool is still very much under development!
 * `figs`: Directory that contains any figures I generate while working on the project. 
 * `notebooks`: Directory that contains the iPython notebooks I used to develop the visualization tool. 
 * `scripts`: Directory that contains scripts I use to acquire the data and then prepare the data for use in the visualization tool. 
-* `web-app-draft1`: Directory that contains the first draft of the tool's Flask application. 
+* `web-app`: Directory that contains the tool's Flask application. 

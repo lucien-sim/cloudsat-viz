@@ -1,0 +1,15 @@
+pandas
+geopandas
+shapely
+bokeh
+flask
+jinja2
+pip
+gunicorn
+numpy
+netCDF4
+rasterio
+os
+json
+pickle
+datetime

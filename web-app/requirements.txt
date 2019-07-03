@@ -9,7 +9,5 @@ gunicorn
 numpy
 netCDF4
 rasterio
-os
-json
-pickle
-datetime
+matplotlib
+rtree

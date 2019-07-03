@@ -15,96 +15,6 @@ from netCDF4 import Dataset
 from global_variables import data_path,default_crs
 
 
-def save_radarPass_object_pkl(radar_pass, data_path):
-    """Saves a radarPass instance to a pickle file with a standard filename format."""
-    pass_timestamp = radar_pass.cloudsat['timestamp'][len(radar_pass.cloudsat['timestamp'])//2]\
-                               .strftime('%Y%m%d_%H%M%S')
-    fname = 'radarPass_plot_'+pass_timestamp+'.pkl'
-    with open(os.path.join(data_path, 'radar_passes', fname), 'wb') as f:
-        pickle.dump(radar_pass, f, 2)
-    return pass_timestamp
-
-
-def load_radarPass_object_pkl(pass_timestamp, data_path):
-    """Loads a radarPass instance from a pickle file with a standard filename format."""
-    fname = 'radarPass_plot_'+pass_timestamp+'.pkl'
-    with open(os.path.join(data_path, 'radar_passes', fname), 'rb') as f:
-        radar_pass = pickle.load(f)
-    return radar_pass
-
-
-def save_radarPass_object_json(radar_pass, data_path):
-    """Saves a radarPass instance to a json file with a standard filename format."""
-    pass_timestamp = radar_pass.cloudsat['timestamp'][len(radar_pass.cloudsat['timestamp'])//2]\
-                               .strftime('%Y%m%d_%H%M%S')
-    fname = 'radarPass_plot_'+pass_timestamp+'.json'
-    radar_dict = radar_pass.get_json_serializable_obj()
-    radar_dict['timestamp'] = [tstamp.strftime(
-        '%Y%m%d_%H%M%S.%f') for tstamp in radar_dict['timestamp']]
-    with open(os.path.join(data_path, 'radar_passes', fname), 'w') as f:
-        json.dump(radar_dict, f)
-    return pass_timestamp
-
-
-def specify_area_of_interest_EPSG4326(bbox=(-180, 60, 180, 90)):
-    """Specifies the area of interest for the plot in the lat/lon coordinate system"""
-    area_of_int = gpd.GeoDataFrame({'geometry': [box(*bbox)]})
-    area_of_int.crs = {'init': 'epsg:4326'}
-    return area_of_int
-
-
-def specify_area_of_interest_EPSG3995(bbox=(-3e6, -3e6, 3e6, 3e6)):
-    """Specifies the area of interest for the plot in the Polar
-    Stereographic coordinate system. 
-    """
-    area_of_int = gpd.GeoDataFrame({'geometry': [box(*bbox)]})
-    area_of_int.crs = {'init': default_crs}
-    return area_of_int
-
-
-def load_country_geometries(area_of_interest):
-    """Loads polygons for all of the world's countries, converts them to the default_crs."""
-    countries = gpd.read_file(os.path.join(
-        data_path, 'Countries_WGS84', 'Countries_WGS84.shp'))
-    countries = countries.to_crs({'init': default_crs})
-    countries = gpd.overlay(countries, area_of_interest, how='intersection')
-    return countries
-
-
-def prepare_polygon_coords_for_bokeh(countries):
-    """Prepares the country polygons for plotting with Bokeh. 
-    
-    To plot series of polygons, Bokeh needs two lists of lists (one for x coordinates, and another
-    for y coordinates). Each element in the outer list represents a single polygon, and each 
-    element in the inner lists represents the coordinate for a single point in given polygon. 
-    This function takes a GeoDataFrame with a given set of countries, and returns Bokeh-friendly
-    lists of x coordinates and y coordinates for those countries. 
-
-    PARAMETERS: 
-    -----------
-    countries: GeoDataFrame with a given set of countries. 
-
-    OUTPUTS: 
-    --------
-    x_coords, y_coords: Bokeh-friendly lists of x and y coordinates for those countries. 
-    """
-
-    # Simplify shapes (to resolution of 10000 meters), convert polygons to multipolygons.
-    list_of_polygons = []
-    for raw_poly in countries['geometry']:
-        raw_poly = raw_poly.simplify(10000, preserve_topology=False)
-        if isinstance(raw_poly, Polygon):
-            raw_poly = MultiPolygon([raw_poly])
-        for poly in list(raw_poly):
-            list_of_polygons.append(poly)
-
-    # Create lists of lists.
-    x_coords = [list(poly.exterior.coords.xy[0]) for poly in list_of_polygons]
-    y_coords = [list(poly.exterior.coords.xy[1]) for poly in list_of_polygons]
-
-    return x_coords, y_coords
-
-
 class radarPass:
     """Class to hold all relevant data for a given radar pass."""
 
@@ -138,7 +48,6 @@ class radarPass:
             '10': (2, 'solid precipitation'),
             '11': (3, 'possible drizzle')
         }
-
 
     def add_cloudclass(self, cldclass_data, cldclass_vdata):
         """Adds CloudSat cloud classification data to the radarPass instance.
@@ -185,8 +94,8 @@ class radarPass:
 
         else:
 
-            # If the data from the cloud class file is incompatible with the CloudSat data (first five 
-            # latitudes and longitudes don't match), set fields equal to None. 
+            # If the data from the cloud class file is incompatible with the CloudSat data (first five
+            # latitudes and longitudes don't match), set fields equal to None.
             self.cloudsat['cloud_class'] = None
             self.cloudsat['cloud_type'] = None
             self.cloudsat['precip_type'] = None
@@ -705,4 +614,95 @@ class radarPass:
         rep_time: representative time (pd.Timestamp)
         """
         return self.cloudsat['timestamp'][len(self.cloudsat['timestamp'])//2]
+
+
+def save_radarPass_object_pkl(radar_pass, data_path):
+    """Saves a radarPass instance to a pickle file with a standard filename format."""
+    pass_timestamp = radar_pass.cloudsat['timestamp'][len(radar_pass.cloudsat['timestamp'])//2]\
+                               .strftime('%Y%m%d_%H%M%S')
+    fname = 'radarPass_plot_'+pass_timestamp+'.pkl'
+    with open(os.path.join(data_path, 'radar_passes', fname), 'wb') as f:
+        pickle.dump(radar_pass, f, 2)
+    return pass_timestamp
+
+
+def load_radarPass_object_pkl(pass_timestamp, data_path):
+    """Loads a radarPass instance from a pickle file with a standard filename format."""
+    fname = 'radarPass_plot_'+pass_timestamp+'.pkl'
+    with open(os.path.join(data_path, 'radar_passes', fname), 'rb') as f:
+        radar_pass = pickle.load(f)
+    return radar_pass
+
+
+def save_radarPass_object_json(radar_pass, data_path):
+    """Saves a radarPass instance to a json file with a standard filename format."""
+    pass_timestamp = radar_pass.cloudsat['timestamp'][len(radar_pass.cloudsat['timestamp'])//2]\
+                               .strftime('%Y%m%d_%H%M%S')
+    fname = 'radarPass_plot_'+pass_timestamp+'.json'
+    radar_dict = radar_pass.get_json_serializable_obj()
+    radar_dict['timestamp'] = [tstamp.strftime(
+        '%Y%m%d_%H%M%S.%f') for tstamp in radar_dict['timestamp']]
+    with open(os.path.join(data_path, 'radar_passes', fname), 'w') as f:
+        json.dump(radar_dict, f)
+    return pass_timestamp
+
+
+def specify_area_of_interest_EPSG4326(bbox=(-180, 60, 180, 90)):
+    """Specifies the area of interest for the plot in the lat/lon coordinate system"""
+    area_of_int = gpd.GeoDataFrame({'geometry': [box(*bbox)]})
+    area_of_int.crs = {'init': 'epsg:4326'}
+    return area_of_int
+
+
+def specify_area_of_interest_EPSG3995(bbox=(-3e6, -3e6, 3e6, 3e6)):
+    """Specifies the area of interest for the plot in the Polar
+    Stereographic coordinate system. 
+    """
+    area_of_int = gpd.GeoDataFrame({'geometry': [box(*bbox)]})
+    area_of_int.crs = {'init': default_crs}
+    return area_of_int
+
+
+def load_country_geometries(area_of_interest):
+    """Loads polygons for all of the world's countries, converts them to the default_crs."""
+    countries = gpd.read_file(os.path.join(
+        data_path, 'Countries_WGS84', 'Countries_WGS84.shp'))
+    countries = countries.to_crs({'init': default_crs})
+    countries = gpd.overlay(countries, area_of_interest, how='intersection')
+    return countries
+
+
+def prepare_polygon_coords_for_bokeh(countries):
+    """Prepares the country polygons for plotting with Bokeh. 
+    
+    To plot series of polygons, Bokeh needs two lists of lists (one for x coordinates, and another
+    for y coordinates). Each element in the outer list represents a single polygon, and each 
+    element in the inner lists represents the coordinate for a single point in given polygon. 
+    This function takes a GeoDataFrame with a given set of countries, and returns Bokeh-friendly
+    lists of x coordinates and y coordinates for those countries. 
+
+    PARAMETERS: 
+    -----------
+    countries: GeoDataFrame with a given set of countries. 
+
+    OUTPUTS: 
+    --------
+    x_coords, y_coords: Bokeh-friendly lists of x and y coordinates for those countries. 
+    """
+
+    # Simplify shapes (to resolution of 10000 meters), convert polygons to multipolygons.
+    list_of_polygons = []
+    for raw_poly in countries['geometry']:
+        raw_poly = raw_poly.simplify(10000, preserve_topology=False)
+        if isinstance(raw_poly, Polygon):
+            raw_poly = MultiPolygon([raw_poly])
+        for poly in list(raw_poly):
+            list_of_polygons.append(poly)
+
+    # Create lists of lists.
+    x_coords = [list(poly.exterior.coords.xy[0]) for poly in list_of_polygons]
+    y_coords = [list(poly.exterior.coords.xy[1]) for poly in list_of_polygons]
+
+    return x_coords, y_coords
+
 
